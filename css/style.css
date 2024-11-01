@@ -1,0 +1,246 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url(../images/background.jpg);
+    background-size: cover;
+}
+
+.circle0 {
+    width: 7vw;
+    height: 7vw;
+    background-image: url(../images/sun.png);
+    background-size: cover;
+    position: relative;
+    border-radius: 50%;
+    
+    /* Add a glowing effect with a yellow/orange shadow */
+    box-shadow: 0 0 1.8vw 0.9vw rgba(255, 165, 0, 0.8),  /* outer glow */
+                0 0 3.6vw 1.8vw rgba(255, 140, 0, 0.5),    /* medium glow */
+                0 0 5.4vw 2.7vw rgba(255, 69, 0, 0.3);   /* intense central glow */
+
+    /* Add a blur for a hotter temperature look */
+    filter: brightness(1.2) blur(0.09vw);
+}
+
+
+.circle1,
+.circle2,
+.circle3,
+.circle4,
+.circle5,
+.circle6,
+.circle7,
+.circle8 {
+    
+    position: absolute;
+}
+
+.circle1 {
+    background-image: url(../images/mercury.png);
+    background-size: cover;
+    width: 1.7vw;
+    height: 1.7vw;
+}
+
+.circle2 {
+    background-image: url(../images/venus.png);
+    background-size: cover;
+    width: 2.5vw;
+    height: 2.5vw;
+    z-index: -7;
+}
+
+.circle3 {
+    background-image: url(../images/earth.png);
+    background-size: cover;
+    width: 3vw;
+    height: 3vw;
+    z-index: -9;
+}
+
+.circle4 {
+    background-image: url(../images/mars.png);
+    background-size: cover;
+    width: 2vw;
+    height: 2vw;
+    z-index: -11;
+}
+
+.circle5 {
+    background-image: url(../images/jupiter.png);
+    background-size: cover;
+    width: 4.2vw;
+    height: 4.2vw;
+    z-index: -13;
+}
+
+.circle6 {
+    background-image: url(../images/saturn.png);
+    background-size: cover;
+    width: 4.5vw;
+    height: 4.5vw;
+    z-index: -15;
+}
+
+.circle7 {
+    background-image: url(../images/uranus.png);
+    background-size: cover;
+    width: 2.7vw;
+    height: 2.7vw;
+    z-index: -17;
+}
+
+.circle8 {
+    background-image: url(../images/neptune.png);
+    background-size: cover;
+    width: 2.6vw;
+    height: 2.6vw;
+    z-index: -19;
+}
+
+/* .path1,
+.path2,
+.path3,
+.path4,
+.path5,
+.path6,
+.path7,
+.path8 {
+    border-radius: 50%;
+    position: absolute;
+    border: 1px lightskyblue solid;
+}
+
+
+.path1 {
+    width: 27vw;
+    height: 7.625vw;
+    z-index: -6;
+}
+
+.path2 {
+    width: 37vw;
+    height: 10.25vw;
+    z-index: -7;
+}
+
+.path3 {
+    width: 47vw;
+    height: 12.875vw;
+    z-index: -8;
+}
+
+.path4 {
+    width: 57vw;
+    height: 15.5vw;
+    z-index: -9;
+}
+
+.path5 {
+    width: 67vw;
+    height: 18.125vw;
+    z-index: -10;
+}
+
+.path6 {
+    width: 77vw;
+    height: 20.75vw;
+    z-index: -11;
+}
+
+.path7 {
+    width: 87vw;
+    height: 23.375vw;
+    z-index: -12;
+}
+
+.path8 {
+    width: 97vw;
+    height: 26vw;
+    z-index: -13;
+} */
+
+/* Path elements (orbits) */
+.path1,
+.path2,
+.path3,
+.path4,
+.path5,
+.path6,
+.path7,
+.path8 {
+    position: absolute;
+    border: 1px dotted rgb(135, 206, 250, 0.8); 
+    border-radius: 50%;
+    pointer-events: none; /* Makes sure the paths don’t interfere with clicks */
+    transform-origin: center;
+}
+
+/* Adjust path sizes to match ellipse radii used in JavaScript */
+.path1 {
+    width: calc(2 * 13.5vw);
+    height: calc(2 * 6.625vh);
+    z-index: -6;
+}
+.path2 {
+    width: calc(2 * 18vw);
+    height: calc(2 * 9.25vh);
+    z-index: -8;
+}
+.path3 {
+    width: calc(2 * 23.5vw);
+    height: calc(2 * 11.875vh);
+    z-index: -10;
+}
+.path4 {
+    width: calc(2 * 28.5vw);
+    height: calc(2 * 14.5vh);
+    z-index: -12;
+}
+.path5 {
+    width: calc(2 * 33.5vw);
+    height: calc(2 * 17.125vh);
+    z-index: -14;
+}
+.path6 {
+    width: calc(2 * 38.5vw);
+    height: calc(2 * 19.75vh);
+    z-index: -16;
+}
+.path7 {
+    width: calc(2 * 43.5vw);
+    height: calc(2 * 22.375vh);
+    z-index: -18;
+}
+.path8 {
+    width: calc(2 * 48vw);
+    height: calc(2 * 25vh);
+    z-index: -20;
+}
+
+/* Center each path around the center of the screen */
+.path1, .path2, .path3, .path4, .path5, .path6, .path7, .path8 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+/* Self-rotation animation */
+@keyframes self-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+
