@@ -31,27 +31,9 @@ let k = window.innerHeight / 2;
 
 let angles = [0, 0, 0, 0, 0, 0, 0, 0];
 
-const revolutionSpeeds = [
-    0.05,
-    0.03,
-    0.02,
-    0.017,
-    0.012,
-    0.009,
-    0.007,
-    0.005
-];
+const revolutionSpeeds = [0.05, 0.03, 0.02, 0.017, 0.012, 0.009, 0.007, 0.005];
 
-const rotationSpeeds = [
-    58.6,
-    243,
-    1,
-    1.03,
-    0.41,
-    0.45,
-    0.72,
-    0.67
-];
+const rotationSpeeds = [58.6, 243, 1, 1.03, 0.41, 0.45, 0.72, 0.67];
 
 // Ellipse parameters for each planet's orbit
 const ellipses = [
@@ -65,7 +47,7 @@ const ellipses = [
     { rx: window.innerWidth * 0.48, ry: window.innerHeight * 0.25, element: divElmPlanet[8] },
 ];
 
-// Function to move a planet along its elliptical path
+// Move a planet along its elliptical path
 function move(rx, ry, angle, speed, element) {
     let x = h + rx * Math.cos(angle);
     let y = k + ry * Math.sin(angle);
@@ -106,10 +88,39 @@ window.addEventListener("resize", () => {
 divElmPlanet.forEach((planet, index) => {
     if (index !== 0) {  // Exclude the Sun
         planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
+
+
+        // planet.addEventListener('mouseover', () => {
+        //     // Stop self-rotation by removing the animation
+        //     planet.style.animation = 'none';
+        //     rotationActive = false;
+        // });
+
+        // planet.addEventListener('mouseout', () => {
+        //     // Restart self-rotation when the mouse leaves
+        //     planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
+        //     rotationActive = true;
+        // });
     }
 });
 
-// Function to fetch planetary data
+// Stop Stop self-rotation by removing the animation
+function stopSelfRotation() {
+    divElmPlanet.forEach((planet, index) => {
+        planet.style.animation = 'none';
+        rotationActive = false;
+    });
+}
+
+// Restart self-rotation when the mouse leaves
+function restartSelfRotation() {
+    divElmPlanet.forEach((planet, index) => {
+        planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
+        rotationActive = true;
+    });
+}
+
+// Fetch planetary data
 async function fetchPlanetData() {
     const url = `https://api.le-systeme-solaire.net/rest/bodies/`;
 
@@ -125,7 +136,7 @@ async function fetchPlanetData() {
     }
 }
 
-// Function to display planet data
+// Display planet data
 function displayPlanetData(planets) {
     divElmPlanet.forEach(planet => {
         if (planet.id.toLowerCase() === 'sun') return;
@@ -133,26 +144,119 @@ function displayPlanetData(planets) {
         planet.addEventListener('mouseover', (event) => {
             const planetData = planets.find(p => p.isPlanet && p.englishName.toLowerCase() === planet.id);
             if (planetData) {
+
+                stopSelfRotation();
+
+                // Tooltip content setup with styles and arrow
                 divElmTooltip.innerHTML = `
-                    <strong>${planetData.englishName}</strong><br>
-                    Mass: ${planetData.mass.massValue} x 10<sup>${planetData.mass.massExponent}</sup> kg<br>
-                    Diameter: ${(planetData.meanRadius * 2).toFixed(0)} km<br>
-                    Gravity: ${planetData.gravity.toFixed(1)} m/s²<br>
-                    Density: ${(planetData.density * 1e3).toFixed(1)} kg/m<sup>3</sup><br>
-                    Mean Temperature: ${planetData.avgTemp} K<br>
-                    Rotation Period: ${planetData.sideralRotation.toFixed(1)} hours<br>
-                    Revolution Period: ${planetData.sideralOrbit.toFixed(1)} days<br>
-                    Distance from the Sun: ${(planetData.semimajorAxis / 1e6).toFixed(1)} x 10<sup>6</sup> km<br>
-                    Number of Moons: ${planetData.moons ? planetData.moons.length : 0} <br>
-                `;
+                    <div style="
+                        font-family: Arial, sans-serif;
+                        background-color: #f9f9f9;
+                        padding: 15px;
+                        border-radius: 8px;
+                        box-shadow: 0px 0px 12px 3px #e9e9e9;
+                        position: relative;
+                        max-width: 400px;">
+                        
+                        <!-- Arrow as a pseudo-element -->
+                        <div id="tooltipArrow" style="
+                            width: 0;
+                            height: 0;
+                            border-left: 8px solid transparent;
+                            border-right: 8px solid transparent;
+                            border-top: 8px solid transparent;
+                            border-bottom: 8px solid transparent;
+                            position: absolute;">
+                        </div>
+
+                        <!-- Tooltip content -->
+                        <h1 style="font-size: 24px; font-weight: bold; text-align: center; color: #333; margin: 0 0 10px 0;">${planetData.englishName}</h1>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.3; color: #555;">
+                            <tr style="background-color: #e9e9e9;">
+                                <td style="font-weight: bold; padding: 8px;  white-space: nowrap;">Mass</td>
+                                <td style="padding: 8px;  white-space: nowrap;">${planetData.mass.massValue} x 10<sup style="vertical-align: super; font-size: 10px">${planetData.mass.massExponent}</sup> kg</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px;  white-space: nowrap;">Diameter</td>
+                                <td style="padding: 8px; white-space: nowrap;">${(planetData.meanRadius * 2).toFixed(0)} km</td>
+                            </tr>
+                            <tr style="background-color: #e9e9e9;">
+                                <td style="font-weight: bold; padding: 8px; white-space: nowrap;">Gravity</td>
+                                <td style="padding: 8px; white-space: nowrap;">${planetData.gravity.toFixed(1)} m/s<sup style="vertical-align: super; font-size: 10px">2</sup></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; white-space: nowrap;">Density</td>
+                                <td style="padding: 8px; white-space: nowrap;">${(planetData.density * 1e3).toFixed(1)} kg/m<sup style="vertical-align: super; font-size: 10px">3</sup></td>
+                            </tr>
+                            <tr style="background-color: #e9e9e9;">
+                                <td style="font-weight: bold; padding: 8px; white-space: nowrap;">Mean Temperature</td>
+                                <td style="padding: 8px; white-space: nowrap;">${planetData.avgTemp} K</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; white-space: nowrap;">Rotation Period</td>
+                                <td style="padding: 8px; white-space: nowrap;">${planetData.sideralRotation.toFixed(1)} hours</td>
+                            </tr>
+                            <tr style="background-color: #e9e9e9;">
+                                <td style="font-weight: bold; padding: 8px; white-space: nowrap;">Revolution Period</td>
+                                <td style="padding: 8px; white-space: nowrap;">${planetData.sideralOrbit.toFixed(1)} days</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; white-space: nowrap;">Distance from the Sun</td>
+                                <td style="padding: 8px; white-space: nowrap;">${(planetData.semimajorAxis / 1e6).toFixed(1)} x 10<sup style="vertical-align: super; font-size: 10px">6</sup> km</td>
+                            </tr>
+                            <tr style="background-color: #e9e9e9;">
+                                <td style="font-weight: bold; padding: 8px; white-space: nowrap;">Number of Moons</td>
+                                <td style="padding: 8px; white-space: nowrap;">${planetData.moons ? planetData.moons.length : 0}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    `;
 
                 divElmTooltip.style.visibility = 'visible';
                 divElmTooltip.style.opacity = 1;
 
-                // Position tooltip
-                const rect = planet.getBoundingClientRect();
-                divElmTooltip.style.left = `${rect.left + window.scrollX + rect.width / 2 - divElmTooltip.offsetWidth / 2}px`;
-                divElmTooltip.style.top = `${rect.top + window.scrollY - divElmTooltip.offsetHeight - 10}px`;
+
+                const tooltipRect = divElmTooltip.getBoundingClientRect(); // Get dimensions and position of the tooltip relative to the viewport.
+                const arrow = document.getElementById('tooltipArrow');
+
+                const screenHeight = window.innerHeight;
+                const screenWidth = window.innerWidth;
+
+                const planetRect = planet.getBoundingClientRect();
+
+                const planetCenterX = planetRect.left + window.scrollX + planetRect.width / 2;
+                const planetCenterY = planetRect.top + window.scrollY + planetRect.height / 2;
+
+                // Position the tooltip based on available screen space
+                if (planetCenterY + planetRect.height / 2 + tooltipRect.height + 16 > screenHeight) {
+                    // Position tooltip above if there's no space below
+                    divElmTooltip.style.top = `${planetRect.top + window.scrollY - tooltipRect.height - 10}px`;
+                    arrow.style.borderTop = '8px solid #f9f9f9';
+                    arrow.style.borderBottom = 'none';
+                    arrow.style.top = '100%';
+                } else {
+                    // Position tooltip below if there's enough space
+                    divElmTooltip.style.top = `${planetRect.bottom + window.scrollY + 10}px`;
+                    arrow.style.borderBottom = '8px solid #f9f9f9';
+                    arrow.style.borderTop = 'none';
+                    arrow.style.top = '-8px';
+                }
+
+                // Adjust the horizontal position of the tooltip
+                if (planetCenterX - tooltipRect.width / 2 < 10) {
+                    // Too close to the left edge
+                    divElmTooltip.style.left = '10px';
+                    arrow.style.left = `${planetCenterX - 10}px`;
+                } else if (planetCenterX + tooltipRect.width / 2 > screenWidth - 10) {
+                    // Too close to the right edge
+                    divElmTooltip.style.left = `${screenWidth - tooltipRect.width - 10}px`;
+                    arrow.style.left = `${planetCenterX - (screenWidth - tooltipRect.width - 10)}px`;
+                } else {
+                    // Centered horizontally
+                    divElmTooltip.style.left = `${planetCenterX - tooltipRect.width / 2}px`;
+                    arrow.style.left = '50%';
+                    arrow.style.transform = 'translateX(-50%)';
+                }
 
                 // Stop rotation of all planets
                 rotationActive = false;
@@ -163,6 +267,8 @@ function displayPlanetData(planets) {
             // Hide the tooltip when the mouse leaves the planet
             divElmTooltip.style.visibility = 'hidden';
             divElmTooltip.style.opacity = 0;
+
+            restartSelfRotation();
 
             // Resume rotation of all planets
             rotationActive = true;
