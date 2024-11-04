@@ -25,6 +25,11 @@ const divElmTooltip = document.createElement('div');
 divElmTooltip.classList.add('tooltip');
 document.body.append(divElmTooltip);
 
+const divElmfollower = document.createElement('div');
+divElmfollower.id = 'follower';
+document.body.append(divElmfollower);
+
+
 // Center of the screen
 let h = window.innerWidth / 2;
 let k = window.innerHeight / 2;
@@ -88,19 +93,6 @@ window.addEventListener("resize", () => {
 divElmPlanet.forEach((planet, index) => {
     if (index !== 0) {  // Exclude the Sun
         planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
-
-
-        // planet.addEventListener('mouseover', () => {
-        //     // Stop self-rotation by removing the animation
-        //     planet.style.animation = 'none';
-        //     rotationActive = false;
-        // });
-
-        // planet.addEventListener('mouseout', () => {
-        //     // Restart self-rotation when the mouse leaves
-        //     planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
-        //     rotationActive = true;
-        // });
     }
 });
 
@@ -119,6 +111,9 @@ function restartSelfRotation() {
         rotationActive = true;
     });
 }
+
+
+/* ---------------------- tooltip ---------------------- */
 
 // Fetch planetary data
 async function fetchPlanetData() {
@@ -278,3 +273,65 @@ function displayPlanetData(planets) {
 
 // Fetch data when the page loads
 fetchPlanetData();
+
+
+
+/* ----------------- follower ------------------- */
+
+const follower = document.getElementById("follower");
+  let cursorX = window.innerWidth / 2;
+  let cursorY = window.innerHeight / 2;
+  let isCursorMoving = false;
+  let inactivityTimeout;
+
+  // Update cursor position variables on mouse move
+  document.addEventListener("mousemove", (event) => {
+    cursorX = event.clientX;
+    cursorY = event.clientY;
+    isCursorMoving = true;
+
+    // Show the follower and reset inactivity timer
+    follower.style.opacity = 1;
+    resetInactivityTimer();
+  });
+
+  // Function to hide follower if no cursor movement is detected
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimeout);
+    inactivityTimeout = setTimeout(() => {
+      follower.style.opacity = 0; // Hide follower
+      isCursorMoving = false;
+    }, 500); // 1-second delay before hiding
+  }
+
+  // Animate the follower to move towards the cursor
+  function animateFollower() {
+    // If the cursor has moved recently, update the follower position
+    if (isCursorMoving) {
+      const followerX = parseFloat(follower.style.left) || 0;
+      const followerY = parseFloat(follower.style.top) || 0;
+      const dx = cursorX - followerX;
+      const dy = cursorY - followerY;
+      const speed = 0.1;
+      
+      // Update follower's position smoothly
+      follower.style.left = followerX + dx * speed + "px";
+      follower.style.top = followerY + dy * speed + "px";
+    }
+    requestAnimationFrame(animateFollower);
+  }
+
+  // Hide the follower on mouse leave
+  document.addEventListener("mouseleave", () => {
+    follower.style.opacity = 0;
+  });
+
+  // Show the follower again when the cursor re-enters
+  document.addEventListener("mouseenter", () => {
+    follower.style.opacity = 1;
+  });
+
+  // Initialize the follower position and start the animation
+  follower.style.left = cursorX + "px";
+  follower.style.top = cursorY + "px";
+  animateFollower();
