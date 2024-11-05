@@ -335,3 +335,42 @@ const follower = document.getElementById("follower");
   follower.style.left = cursorX + "px";
   follower.style.top = cursorY + "px";
   animateFollower();
+
+
+  /* ---------- title ---------- */
+
+  const text = "EduExpo-Digital-Planetarium";
+    const typingSpeed = 150; // speed of typing in milliseconds
+    const erasingSpeed = 100; // speed of erasing in milliseconds
+    const delayBetweenCycles = 1000; // delay before starting to type again after erasing
+
+    let index = 0;
+    let isErasing = false;
+    const h2 = document.getElementById("typing-text");
+
+    function type() {
+        if (!isErasing) {
+            // Typing effect
+            h2.textContent = text.slice(0, index + 1);
+            index++;
+            if (index === text.length) {
+                isErasing = true; // start erasing after typing is complete
+                setTimeout(type, delayBetweenCycles);
+            } else {
+                setTimeout(type, typingSpeed);
+            }
+        } else {
+            // Erasing effect
+            h2.textContent = text.slice(0, index - 1);
+            index--;
+            if (index === 0) {
+                isErasing = false; // start typing again after erasing is complete
+                setTimeout(type, delayBetweenCycles);
+            } else {
+                setTimeout(type, erasingSpeed);
+            }
+        }
+    }
+
+    // Start the typing effect
+    type();
