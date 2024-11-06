@@ -1,61 +1,148 @@
 let divElmPlanet = [];
 let divElmPath = [];
+let ellipses = [];
 const planetNames = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 
-// Create planet elements
-for (let i = 0; i < 9; i++) {
-    const divElm = document.createElement('div');
-    divElm.classList.add('planet');
-    divElm.id = planetNames[i];
-    document.body.append(divElm);
-    divElmPlanet.push(divElm);
-}
-
-// Create orbital path elements
-for (let i = 1; i < 9; i++) {
-    const divElm = document.createElement('div');
-    divElm.classList.add('path');
-    divElm.id = 'path' + i;
-    document.body.append(divElm);
-    divElmPath.push(divElm);
-}
-
-// Create tooltip element
-const divElmTooltip = document.createElement('div');
-divElmTooltip.classList.add('tooltip');
-document.body.append(divElmTooltip);
-
-const divElmfollower = document.createElement('div');
-divElmfollower.id = 'follower';
-document.body.append(divElmfollower);
-
+let rotationActive = true;
 
 // Center of the screen
 let h = window.innerWidth / 2;
 let k = window.innerHeight / 2;
 
-let angles = [0, 0, 0, 0, 0, 0, 0, 0];
-
+// Movement parameters
+let angles = Array(8).fill(0);
 const revolutionSpeeds = [0.05, 0.03, 0.02, 0.017, 0.012, 0.009, 0.007, 0.005];
-
 const rotationSpeeds = [58.6, 243, 1, 1.03, 0.41, 0.45, 0.72, 0.67];
 
-// Ellipse parameters for each planet's orbit
-const ellipses = [
-    { rx: window.innerWidth * 0.135, ry: window.innerHeight * 0.06625, element: divElmPlanet[1] },
-    { rx: window.innerWidth * 0.18, ry: window.innerHeight * 0.0925, element: divElmPlanet[2] },
-    { rx: window.innerWidth * 0.235, ry: window.innerHeight * 0.11875, element: divElmPlanet[3] },
-    { rx: window.innerWidth * 0.285, ry: window.innerHeight * 0.145, element: divElmPlanet[4] },
-    { rx: window.innerWidth * 0.335, ry: window.innerHeight * 0.17125, element: divElmPlanet[5] },
-    { rx: window.innerWidth * 0.385, ry: window.innerHeight * 0.1975, element: divElmPlanet[6] },
-    { rx: window.innerWidth * 0.435, ry: window.innerHeight * 0.22375, element: divElmPlanet[7] },
-    { rx: window.innerWidth * 0.48, ry: window.innerHeight * 0.25, element: divElmPlanet[8] },
-];
+// keep cursor current position
+let cursorX;
+let cursorY;
+
+let isCursorOnPlanet = false;
+
+
+/* ------------------------ loader and fetch planet data ------------------- */
+
+// Loader visibility
+function toggleLoader(show) {
+    document.getElementById('loader').style.display = show ? 'block' : 'none';
+}
+
+// Fetch planetary data
+async function fetchPlanetData() {
+    toggleLoader(true);
+    const url = `https://api.le-systeme-solaire.net/rest/bodies/`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        toggleLoader(false);
+        setBackground();
+        initializeSystem(data);
+    } catch (error) {
+        console.error('Fetch operation error:', error);
+        toggleLoader(false);
+    }
+}
+
+// Set background image to the body
+function setBackground() {
+    document.body.style.backgroundImage = "url('./images/background.jpg')";
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundRepeat = "no-repeat";
+    document.body.style.backgroundPosition = "center";
+}
+
+// Initialize planet animations after data is loaded
+function initializeSystem(data) {
+    createObjects();
+
+    displayPlanetData(data.bodies);
+
+    // Orbit animation loop
+    const animationInterval = setInterval(() => {
+        if (rotationActive) {
+            for (let i = 0; i < 8; i++) {
+                angles[i] = move(ellipses[i].rx, ellipses[i].ry, angles[i], revolutionSpeeds[i], ellipses[i].element);
+            }
+        }
+    }, 50);
+
+    // Apply self-rotation speeds to each planet
+    applyRotationSpeeds();
+
+    // Handle resizing
+    onResize();
+    // window.addEventListener("resize", onResize);
+
+    // Cursor tracking and tooltip
+    setupCursorTracking(document.getElementById("follower"));
+
+    // Start the typing effect of the title
+    type();
+}
+
+
+/* ----------------------------- create elements -------------------------- */
+
+// Create planet and path elements
+function createObjects() {
+    // Create planet elements
+    planetNames.forEach((name, index) => {
+        const divElm = document.createElement('div');
+        divElm.classList.add('planet');
+        divElm.id = name;
+        document.body.append(divElm);
+        divElmPlanet.push(divElm);
+
+        if (index > 0) { // Exclude the Sun
+            const pathElm = document.createElement('div');
+            pathElm.classList.add('path');
+            pathElm.id = 'path' + index;
+            document.body.append(pathElm);
+            divElmPath.push(pathElm);
+        }
+    });
+
+    ellipses = createEllipses();
+    createTooltip();
+    createCursorFollower();
+}
+
+function createEllipses() {
+    return [
+        { rx: window.innerWidth * 0.135, ry: window.innerHeight * 0.06625, element: divElmPlanet[1] },
+        { rx: window.innerWidth * 0.18, ry: window.innerHeight * 0.0925, element: divElmPlanet[2] },
+        { rx: window.innerWidth * 0.235, ry: window.innerHeight * 0.11875, element: divElmPlanet[3] },
+        { rx: window.innerWidth * 0.285, ry: window.innerHeight * 0.145, element: divElmPlanet[4] },
+        { rx: window.innerWidth * 0.335, ry: window.innerHeight * 0.17125, element: divElmPlanet[5] },
+        { rx: window.innerWidth * 0.385, ry: window.innerHeight * 0.1975, element: divElmPlanet[6] },
+        { rx: window.innerWidth * 0.435, ry: window.innerHeight * 0.22375, element: divElmPlanet[7] },
+        { rx: window.innerWidth * 0.48, ry: window.innerHeight * 0.25, element: divElmPlanet[8] },
+    ];
+}
+
+function createTooltip() {
+    const divElmTooltip = document.createElement('div');
+    divElmTooltip.id = 'tooltip';
+    document.body.append(divElmTooltip);
+}
+
+function createCursorFollower() {
+    const divElmfollower = document.createElement('div');
+    divElmfollower.id = 'follower';
+    document.body.append(divElmfollower);
+}
+
+
+
+/* -------------- planet rotation and display planet details ------------- */
 
 // Move a planet along its elliptical path
 function move(rx, ry, angle, speed, element) {
-    let x = h + rx * Math.cos(angle);
-    let y = k + ry * Math.sin(angle);
+    const x = h + rx * Math.cos(angle);
+    const y = k + ry * Math.sin(angle);
 
     element.style.left = `${x - element.offsetWidth / 2}px`;
     element.style.top = `${y - element.offsetHeight / 2}px`;
@@ -63,72 +150,13 @@ function move(rx, ry, angle, speed, element) {
     return angle + speed;
 }
 
-// Variables to control animation state
-let rotationActive = true;
-
-// Orbit animation loop
-const animationInterval = setInterval(() => {
-    if (rotationActive) {
-        for (let i = 0; i < 8; i++) {
-            angles[i] = move(ellipses[i].rx, ellipses[i].ry, angles[i], revolutionSpeeds[i], ellipses[i].element);
-        }
-    }
-}, 50);
-
-// Update ellipses and reposition planets on window resize
-window.addEventListener("resize", () => {
-    h = window.innerWidth / 2;
-    k = window.innerHeight / 2;
-
-    // Update radii for each ellipse path
-    ellipses.forEach((ellipse, index) => {
-        ellipse.rx = window.innerWidth * (0.135 + (index * 0.045));
-        ellipse.ry = window.innerHeight * (0.06625 + (index * 0.02625));
-        // Reposition each planet immediately after resizing
-        angles[index] = move(ellipse.rx, ellipse.ry, angles[index], 0, ellipse.element);
-    });
-});
-
-// Apply self-rotation speeds to each planet
-divElmPlanet.forEach((planet, index) => {
-    if (index !== 0) {  // Exclude the Sun
-        planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
-    }
-});
-
-// Stop Stop self-rotation by removing the animation
-function stopSelfRotation() {
+// Apply self-rotation speeds
+function applyRotationSpeeds() {
     divElmPlanet.forEach((planet, index) => {
-        planet.style.animation = 'none';
-        rotationActive = false;
-    });
-}
-
-// Restart self-rotation when the mouse leaves
-function restartSelfRotation() {
-    divElmPlanet.forEach((planet, index) => {
-        planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
-        rotationActive = true;
-    });
-}
-
-
-/* ---------------------- tooltip ---------------------- */
-
-// Fetch planetary data
-async function fetchPlanetData() {
-    const url = `https://api.le-systeme-solaire.net/rest/bodies/`;
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        if (index !== 0) {  // Exclude the Sun
+            planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
         }
-        const data = await response.json();
-        displayPlanetData(data.bodies);
-    } catch (error) {
-        console.error('The problem with fetch operation:', error);
-    }
+    });
 }
 
 // Display planet data
@@ -136,9 +164,12 @@ function displayPlanetData(planets) {
     divElmPlanet.forEach(planet => {
         if (planet.id.toLowerCase() === 'sun') return;
 
+        let divElmTooltip = document.getElementById("tooltip");
         planet.addEventListener('mouseover', (event) => {
             const planetData = planets.find(p => p.isPlanet && p.englishName.toLowerCase() === planet.id);
             if (planetData) {
+
+                isCursorOnPlanet = true;
 
                 stopSelfRotation();
 
@@ -265,112 +296,141 @@ function displayPlanetData(planets) {
 
             restartSelfRotation();
 
+            isCursorOnPlanet = false;
+
             // Resume rotation of all planets
             rotationActive = true;
         });
     });
 }
 
-// Fetch data when the page loads
-fetchPlanetData();
+// Stop Stop self-rotation by removing the animation
+function stopSelfRotation() {
+    divElmPlanet.forEach((planet, index) => {
+        planet.style.animation = 'none';
+        rotationActive = false;
+    });
+}
+
+// Restart self-rotation when the mouse leaves
+function restartSelfRotation() {
+    divElmPlanet.forEach((planet, index) => {
+        planet.style.animation = `self-rotate ${rotationSpeeds[index - 1] * 100}s linear infinite`;
+        rotationActive = true;
+    });
+}
+
+
+/* ------------------------- reponsive design ---------------------------*/
+
+// Update ellipses and reposition planets on window resize
+function onResize() {
+    window.addEventListener("resize", () => {
+        h = window.innerWidth / 2;
+        k = window.innerHeight / 2;
+    
+        // Update radii for each ellipse path
+        ellipses.forEach((ellipse, index) => {
+            ellipse.rx = window.innerWidth * [0.135, 0.18, 0.235, 0.285, 0.335, 0.385, 0.435, 0.48][index];
+            ellipse.ry = window.innerHeight * [0.06625, 0.0925, 0.11875, 0.145, 0.17125, 0.1975, 0.22375, 0.25][index];
+            // Reposition each planet immediately after resizing
+            angles[index] = move(ellipse.rx, ellipse.ry, angles[index], 0, ellipse.element);
+        });
+    });
+    
+}
 
 
 
-/* ----------------- follower ------------------- */
+/* ---------------------------- cursor follower ---------------------------*/
 
-const follower = document.getElementById("follower");
-  let cursorX = window.innerWidth / 2;
-  let cursorY = window.innerHeight / 2;
-  let isCursorMoving = false;
-  let inactivityTimeout;
+// Setup cursor tracking
+function setupCursorTracking(follower) {
+    let inactivityTimeout;
+    document.addEventListener("mousemove", (event) => {
+        cursorX = event.clientX;
+        cursorY = event.clientY;
 
-  // Update cursor position variables on mouse move
-  document.addEventListener("mousemove", (event) => {
-    cursorX = event.clientX;
-    cursorY = event.clientY;
-    isCursorMoving = true;
+        follower.style.opacity = 1;
 
-    // Show the follower and reset inactivity timer
-    follower.style.opacity = 1;
-    resetInactivityTimer();
-  });
-
-  // Function to hide follower if no cursor movement is detected
-  function resetInactivityTimer() {
-    clearTimeout(inactivityTimeout);
-    inactivityTimeout = setTimeout(() => {
-      follower.style.opacity = 0; // Hide follower
-      isCursorMoving = false;
-    }, 500); // 1-second delay before hiding
-  }
-
-  // Animate the follower to move towards the cursor
-  function animateFollower() {
-    // If the cursor has moved recently, update the follower position
-    if (isCursorMoving) {
-      const followerX = parseFloat(follower.style.left) || 0;
-      const followerY = parseFloat(follower.style.top) || 0;
-      const dx = cursorX - followerX;
-      const dy = cursorY - followerY;
-      const speed = 0.1;
-      
-      // Update follower's position smoothly
-      follower.style.left = followerX + dx * speed + "px";
-      follower.style.top = followerY + dy * speed + "px";
-    }
-    requestAnimationFrame(animateFollower);
-  }
-
-  // Hide the follower on mouse leave
-  document.addEventListener("mouseleave", () => {
-    follower.style.opacity = 0;
-  });
-
-  // Show the follower again when the cursor re-enters
-  document.addEventListener("mouseenter", () => {
-    follower.style.opacity = 1;
-  });
-
-  // Initialize the follower position and start the animation
-  follower.style.left = cursorX + "px";
-  follower.style.top = cursorY + "px";
-  animateFollower();
-
-
-  /* ---------- title ---------- */
-
-  const text = "EduExpo-Digital-Planetarium";
-    const typingSpeed = 150; // speed of typing in milliseconds
-    const erasingSpeed = 100; // speed of erasing in milliseconds
-    const delayBetweenCycles = 1000; // delay before starting to type again after erasing
-
-    let index = 0;
-    let isErasing = false;
-    const h2 = document.getElementById("typing-text");
-
-    function type() {
-        if (!isErasing) {
-            // Typing effect
-            h2.textContent = text.slice(0, index + 1);
-            index++;
-            if (index === text.length) {
-                isErasing = true; // start erasing after typing is complete
-                setTimeout(type, delayBetweenCycles);
-            } else {
-                setTimeout(type, typingSpeed);
-            }
+        clearTimeout(inactivityTimeout);
+        if (isCursorOnPlanet) {
+            follower.style.opacity = 0; // Hide follower
         } else {
-            // Erasing effect
-            h2.textContent = text.slice(0, index - 1);
-            index--;
-            if (index === 0) {
-                isErasing = false; // start typing again after erasing is complete
-                setTimeout(type, delayBetweenCycles);
-            } else {
-                setTimeout(type, erasingSpeed);
-            }
+            inactivityTimeout = setTimeout(() => {
+                follower.style.opacity = 0; // Hide follower
+
+            }, 2000); // 1s delay before hiding
+        }
+    });
+
+    document.addEventListener("mouseleave", () => {
+        follower.style.opacity = 0;
+    });
+
+    document.addEventListener("mouseenter", () => {
+        follower.style.opacity = 1;
+    });
+
+    // Start the animation
+    animateFollower(follower);
+}
+
+// Animate the follower to move towards the cursor
+function animateFollower(follower) {
+
+    const followerX = parseFloat(follower.style.left) || 0;
+    const followerY = parseFloat(follower.style.top) || 0;
+    const dx = cursorX - followerX - 5;
+    const dy = cursorY - followerY - 5;
+    const speed = 0.1;
+
+    // Update follower's position smoothly
+    follower.style.left = followerX + dx * speed + "px";
+    follower.style.top = followerY + dy * speed + "px";
+
+    // Continuously call animateFollower for smooth movement
+    requestAnimationFrame(() => animateFollower(follower));
+}
+
+
+/* --------------------------------- title ----------------------------- */
+
+const text = "EduExpo-Digital-Planetarium";
+const typingSpeed = 150; // speed of typing in milliseconds
+const erasingSpeed = 100; // speed of erasing in milliseconds
+const delayBetweenCycles = 1000; // delay before starting to type again after erasing
+
+let index = 0;
+let isErasing = false;
+const h2 = document.getElementById("typing-text");
+
+function type() {
+    if (!isErasing) {
+        // Typing effect
+        h2.textContent = text.slice(0, index + 1);
+        index++;
+        if (index === text.length) {
+            isErasing = true; // start erasing after typing is complete
+            setTimeout(type, delayBetweenCycles);
+        } else {
+            setTimeout(type, typingSpeed);
+        }
+    } else {
+        // Erasing effect
+        h2.textContent = text.slice(0, index - 1);
+        index--;
+        if (index === 0) {
+            isErasing = false; // start typing again after erasing is complete
+            setTimeout(type, delayBetweenCycles);
+        } else {
+            setTimeout(type, erasingSpeed);
         }
     }
+}
 
-    // Start the typing effect
-    type();
+
+
+
+/* -------------------- Start the application ---------------------*/
+fetchPlanetData();
