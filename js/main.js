@@ -43,7 +43,7 @@ async function fetchPlanetData() {
             toggleLoader(false);
             setBackground();
             initializeSystem(data);
-        }, 5000); // 5s 
+        }, 3000); // 3s 
     } catch (error) {
         console.error('Fetch operation error:', error);
         toggleLoader(false);

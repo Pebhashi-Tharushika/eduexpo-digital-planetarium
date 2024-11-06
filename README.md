@@ -18,6 +18,7 @@ EduExpo Digital Planetarium is an educational application designed to learn stud
 ### Preview
 ![](images/preview.gif)
 
+
 ### License
 This project is licensed under the [MIT LICENSE](LICENSE). 
 CopyRight © 2023 MBPT. All Rights Reserved.
