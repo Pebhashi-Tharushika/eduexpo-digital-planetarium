@@ -26,6 +26,7 @@ let isCursorOnPlanet = false;
 // Loader visibility
 function toggleLoader(show) {
     document.getElementById('loader').style.display = show ? 'block' : 'none';
+    document.getElementById('wrapper').style.display = show ? 'block' : 'none';
 }
 
 // Fetch planetary data
@@ -37,9 +38,12 @@ async function fetchPlanetData() {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        toggleLoader(false);
-        setBackground();
-        initializeSystem(data);
+        // Delay for 2 seconds after success before calling the functions
+        setTimeout(() => {
+            toggleLoader(false);
+            setBackground();
+            initializeSystem(data);
+        }, 5000); // 5s 
     } catch (error) {
         console.error('Fetch operation error:', error);
         toggleLoader(false);
