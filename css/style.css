@@ -2,7 +2,14 @@
     box-sizing: border-box;
 }
 
+html {
+    width: 100%;
+    height: 100%;
+}
+
 body {
+    width: 100%;
+    height: 100%;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -184,8 +191,10 @@ body {
 
 /* for the title */
 h2 {
-    position: relative;
+    position: absolute;
     top: 2vh;
+    left: 50%;
+    transform:translateX(-50%);
     font-size: 2em;
     text-align: center;
     display: inline-block;
@@ -259,52 +268,42 @@ h2 {
 }
 
 
-/* waves */
+/* -------------------- universe -------------------- */
 
-#wrapper {
-    width: 100vw;
-    height: 100vw;
+#universe {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #020107;
+}
+
+.stars {
     position: absolute;
-    background: linear-gradient(90deg, rgba(0, 49, 84, 0.7) 0%, rgba(154, 198, 229, 1) 100%);
-    overflow: hidden;
+    border-radius: 50%;
+    background: transparent;
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
-.wave {
-    width: 170vw;
-    height: 172vw;
+
+.comets {
+    width: 5px;
+    height: 65px;
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
     position: absolute;
-    top: -63%;
-    left: -10%;
-    margin-left: -25vw;
-    margin-top: -65vw;
-    border-radius: 38%;
-    background: rgba(255, 255, 255, 0.75);
-    animation: wave 15s infinite ease-in-out;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+    animation: cometMove 10s linear infinite;
 }
 
-/* Define different animations for each wave */
-.wave1 {
-    background: rgba(255, 255, 255, 0.55);
-    animation: wave 22s infinite ease-in-out;
-}
-
-.wave2 {
-    background: rgba(255, 255, 255, 0.65);
-    animation: wave 18s infinite ease-in-out;
-}
-
-.wave3 {
-    background: rgba(255, 255, 255, 0.75);
-    animation: wave 15s infinite ease-in-out;
-}
-
-
-@keyframes wave {
+@keyframes cometMove {
     from {
-        transform: rotate(0deg);
+        transform: translate(var(--comet-start-x), var(--comet-start-y)) rotate(var(--comet-angle));
+        height: 5px;
     }
 
-    from {
-        transform: rotate(360deg);
+    to {
+        transform: translate(var(--comet-end-x), var(--comet-end-y)) rotate(var(--comet-angle));
+        height: 600px;
     }
 }

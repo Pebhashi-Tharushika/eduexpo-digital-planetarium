@@ -26,7 +26,6 @@ let isCursorOnPlanet = false;
 // Loader visibility
 function toggleLoader(show) {
     document.getElementById('loader').style.display = show ? 'block' : 'none';
-    document.getElementById('wrapper').style.display = show ? 'block' : 'none';
 }
 
 // Fetch planetary data
@@ -52,10 +51,12 @@ async function fetchPlanetData() {
 
 // Set background image to the body
 function setBackground() {
-    document.body.style.backgroundImage = "url('./images/background.jpg')";
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundRepeat = "no-repeat";
-    document.body.style.backgroundPosition = "center";
+    // Run the applyStars function when the page loads
+applyStars();
+    // document.body.style.backgroundImage = "url('./images/background.jpg')";
+    // document.body.style.backgroundSize = "cover";
+    // document.body.style.backgroundRepeat = "no-repeat";
+    // document.body.style.backgroundPosition = "center";
 }
 
 // Initialize planet animations after data is loaded
@@ -433,6 +434,123 @@ function type() {
     }
 }
 
+/* ------------------- universe background -----------------------*/
+const universe = document.getElementById('universe');
+const numStars = 3000;
+const starFieldWidth = window.innerWidth;
+const starFieldHeight = window.innerHeight;
+let cometDivElm;
+
+// Function to create stars
+function applyStars() {
+    for (let i = 0; i < numStars; i++) {
+        let starDivElm = document.createElement('div');
+
+        // Random size between 1 and 3
+        let size = Math.ceil(Math.random() * 3);
+        starDivElm.style.width = `${size}px`;
+        starDivElm.style.height = `${size}px`;
+
+        // Random position for each star
+        let x = Math.floor(Math.random() * starFieldWidth);
+        let y = Math.floor(Math.random() * starFieldHeight);
+
+        // Apply position and opacity
+        starDivElm.style.top = `${y}px`;
+        starDivElm.style.left = `${x}px`;
+        starDivElm.style.opacity = (Math.random() * 0.9 + 0.1).toFixed(1);
+
+        starDivElm.classList.add('stars');
+        universe.append(starDivElm);
+    }
+
+    // Create a single comet element
+    cometDivElm = document.createElement('div');
+    cometDivElm.classList.add('comets');
+    cometDivElm.style.visibility = 'hidden'; // Start with comet hidden
+    universe.append(cometDivElm);
+
+    // Start the comet movement with an initial delay
+    setTimeout(moveComets, 3000); // Initial delay of 3 seconds
+}
+
+// Function to move the comet in a random direction
+function moveComets() {
+    let x = Math.random();
+    let y = Math.random();
+
+    let angle;
+    let endX, endY;
+
+    // Generate random offsets (up to 10% of the width/height)
+    let offsetX = Math.random() * 0.2 * starFieldWidth;
+    let offsetY = Math.random() * 0.2 * starFieldHeight;
+
+    // Reset comet position properties
+    cometDivElm.style.top = '';
+    cometDivElm.style.left = '';
+    cometDivElm.style.bottom = '';
+    cometDivElm.style.right = '';
+
+    // Determine starting edge, random offset, and angle based on random x and y
+    if (x < 0.5 && y < 0.5) { // Top-left
+        cometDivElm.style.top = `0px`;
+        offsetY = 0;
+        cometDivElm.style.left = `${offsetX}px`;
+        angle = 135;
+        endX = starFieldWidth - offsetX;
+        endY = starFieldHeight - offsetY;
+    } else if (x < 0.5 && y >= 0.5) { // Bottom-left
+        cometDivElm.style.bottom = `${offsetY}px`;
+        cometDivElm.style.left = `0px`;
+        offsetX = 0;
+        angle = 45;
+        endX = starFieldWidth - offsetX;
+        endY = -starFieldHeight + offsetY;
+    } else if (x >= 0.5 && y < 0.5) { // Top-right
+        cometDivElm.style.top = `${offsetY}px`;
+        cometDivElm.style.right = `0px`;
+        offsetX = 0;
+        angle = -135;
+        endX = -starFieldWidth + offsetX;
+        endY = starFieldHeight - offsetY;
+    } else { // Bottom-right
+        cometDivElm.style.bottom = `0px`;
+        offsetY = 0;
+        cometDivElm.style.right = `${offsetX}px`;
+        angle = -45;
+        endX = -starFieldWidth + offsetX;
+        endY = -starFieldHeight + offsetY;
+    }
+
+    // Show the comet before the animation starts
+    cometDivElm.style.visibility = 'visible';
+
+    // Temporarily remove and reapply the animation
+    cometDivElm.style.animation = 'none';
+    cometDivElm.offsetHeight; // Trigger reflow to reset the animation
+    cometDivElm.style.animation = 'cometMove 10s linear'; // Animation lasts 10 seconds
+
+    // Set CSS variables for animation
+    console.log(offsetX);
+    console.log(offsetY);
+    console.log(angle);
+    console.log(endX);
+    console.log(endY);
+
+    cometDivElm.style.setProperty('--comet-start-x', `${offsetX}px`);
+    cometDivElm.style.setProperty('--comet-start-y', `${offsetY}px`);
+    cometDivElm.style.setProperty('--comet-angle', `${angle}deg`);
+    cometDivElm.style.setProperty('--comet-end-x', `${endX}px`);
+    cometDivElm.style.setProperty('--comet-end-y', `${endY}px`);
+
+
+    // Hide the comet after 10s (animation duration), then delay the next movement by 5s
+    setTimeout(() => {
+        cometDivElm.style.visibility = 'hidden';
+        setTimeout(moveComets, 5000); // 5s delay before the next movement
+    }, 10000); // 10s animation duration
+}
 
 
 
