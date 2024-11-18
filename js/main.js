@@ -1,3 +1,271 @@
+import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
+import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls";
+
+/* ------------ create a galaxy ------------ */
+
+const canvas = document.getElementById("canvas");
+
+const scene = new THREE.Scene(); // Create a 3D scene
+
+const guiChange = {};
+guiChange.count = 1000000;
+guiChange.size = 0.01;
+guiChange.radius = 5;
+guiChange.branch = 4;
+guiChange.spin = 1;
+guiChange.randomness = 0.2;
+guiChange.power = 3;
+guiChange.inside = "#ff6030";
+guiChange.outside = "#1b3984";
+
+let particleGeometry = null;
+let particleMaterial = null;
+let particle = null;
+
+/* ------------------ for testing - test cube --------------- */
+
+// const cube = new THREE.Mesh(
+//   new THREE.BoxGeometry(1, 1, 1),
+//   new THREE.MeshBasicMaterial()
+// );
+// scene.add(cube);
+
+/* ------------ create the galaxy ------------ */
+const galaxy = () => {
+    if (particle !== null) {
+        particleGeometry.dispose();
+        particleMaterial.dispose();
+        scene.remove(particle);
+    }
+
+    particleGeometry = new THREE.BufferGeometry();
+    const position = new Float32Array(guiChange.count * 3);
+    const color = new Float32Array(guiChange.count * 3);
+
+    for (let i = 0; i < guiChange.count; i++) {
+        const radius = Math.random() * guiChange.radius;
+        const branch = ((i % guiChange.branch) / guiChange.branch) * Math.PI * 2;
+        const spin = radius * guiChange.spin;
+        const randomX = Math.pow(Math.random(), guiChange.power) * (Math.random() < 0.5 ? 1 : -1);
+        const randomY = Math.pow(Math.random(), guiChange.power) * (Math.random() < 0.5 ? 1 : -1);
+        const randomZ = Math.pow(Math.random(), guiChange.power) * (Math.random() < 0.5 ? 1 : -1);
+
+        position[i * 3] = Math.cos(branch + spin) * radius + randomX;
+        position[i * 3 + 1] = randomY;
+        position[i * 3 + 2] = Math.sin(branch + spin) * radius + randomZ;
+
+        const insideColor = new THREE.Color(guiChange.inside);
+        const outsideColor = new THREE.Color(guiChange.outside);
+
+        const mixed = insideColor.clone();
+        mixed.lerp(outsideColor, radius / guiChange.radius);
+
+        color[i * 3] = mixed.r;
+        color[i * 3 + 1] = mixed.g;
+        color[i * 3 + 2] = mixed.b;
+    }
+
+    particleGeometry.setAttribute("position", new THREE.BufferAttribute(position, 3));
+    particleGeometry.setAttribute("color", new THREE.BufferAttribute(color, 3));
+
+    particleMaterial = new THREE.PointsMaterial({
+        size: guiChange.size,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        vertexColors: true,
+        opacity: 1,
+        transparent: true
+    });
+
+    particle = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particle);
+};
+
+
+
+/* ------------ Window resize event handler ------------ */
+
+const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+};
+
+window.addEventListener("resize", () => {
+
+    // Update camera
+    sizes.width = window.innerWidth;
+    sizes.height = window.innerHeight;
+
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+// Setup camera
+
+const camera = new THREE.PerspectiveCamera(
+    75,
+    sizes.width / sizes.height,
+    0.1,
+    100
+);
+camera.position.x = 3;
+camera.position.y = 3;
+camera.position.z = 3;
+scene.add(camera);
+
+// Controls
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+
+/* ------------ Renderer ------------ */
+
+const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    alpha: true
+});
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+
+/* ------------ Animation of the galaxy ------------ */
+
+const clock = new THREE.Clock();
+let gatherSpeed = 0.01;
+let opacityDecreaseSpeed = 0.003;
+
+let animationFrameId;
+
+const tick = () => {
+    const elapsedTime = clock.getElapsedTime();
+
+    particle.rotation.y = elapsedTime / 8; // Rotate the galaxy on its Y-axis
+
+    const positions = particleGeometry.attributes.position.array;
+
+    // Gather particles towards the center
+    for (let i = 0; i < guiChange.count; i++) {
+        const x = positions[i * 3];
+        const y = positions[i * 3 + 1];
+        const z = positions[i * 3 + 2];
+
+        if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01 || Math.abs(z) > 0.01) {
+            positions[i * 3] = x * (1 - gatherSpeed); // Move towards 0
+            positions[i * 3 + 1] = y * (1 - gatherSpeed);
+            positions[i * 3 + 2] = z * (1 - gatherSpeed);
+        }
+    }
+
+    // Gradually reduce opacity
+    if (particleMaterial.opacity > 0) {
+        particleMaterial.opacity -= opacityDecreaseSpeed;
+    }
+
+    particleGeometry.attributes.position.needsUpdate = true;
+
+    // Update controls
+    controls.update();
+
+    // Render
+    renderer.render(scene, camera);
+
+    // Check if opacity has reduced enough to remove the canvas
+    const universeDiv = document.getElementById("universe");
+    if (universeDiv && canvas && universeDiv.contains(canvas)) {
+        // Remove canvas when opacity is 0
+        if (particleMaterial.opacity <= 0) {
+            universeDiv.removeChild(canvas);
+            cancelAnimationFrame(animationFrameId);  // Stop the animation loop
+            fetchPlanetData(); // Start the planet motion 
+            return;  // Stop executing further frames
+        }
+    } else {
+        cancelAnimationFrame(animationFrameId);  // Stop the animation if canvas is no longer in the DOM
+        return;
+    }
+
+    // Call tick again on the next frame
+    animationFrameId = requestAnimationFrame(tick);
+};
+
+
+
+
+/* ------------ create background stars ------------ */
+
+
+const universe = document.getElementById('universe');
+const numStars = 1500;
+let starFieldWidth;
+let starFieldHeight;
+let stars = []; // Store star elements for reuse
+
+
+
+function setUniverseBackground() {
+    const divStars = universe.querySelectorAll(".stars");  // Select all children with class "stars" inside the universe
+    divStars.forEach(star => star.remove()); // Remove each "stars" element
+    stars = []; // Reset stars array
+
+    starFieldWidth = window.innerWidth;
+    starFieldHeight = window.innerHeight;
+
+    for (let i = 0; i < numStars; i++) {
+        let starDivElm = document.createElement('div');
+
+        // Random size between 1 and 3
+        let size = Math.ceil(Math.random() * 2.2);
+        starDivElm.style.width = `${size}px`;
+        starDivElm.style.height = `${size}px`;
+
+        // Random position for each star
+        let x = Math.floor(Math.random() * starFieldWidth);
+        let y = Math.floor(Math.random() * starFieldHeight);
+
+        // Apply position and opacity
+        starDivElm.style.top = `${y}px`;
+        starDivElm.style.left = `${x}px`;
+        starDivElm.style.opacity = (Math.random() * 0.9 + 0.1).toFixed(1);
+
+        starDivElm.classList.add('stars');
+        stars.push(starDivElm); // Store reference to star for reuse
+        universe.append(starDivElm);
+    }
+
+
+}
+
+
+
+
+/* --------------- display loader at the begining -------------------------  */
+
+
+
+// Loader visibility
+function toggleLoader(show) {
+    document.getElementById('loader').style.display = show ? 'block' : 'none';
+}
+
+
+toggleLoader(true); // Show the loader initially
+
+
+// Wait for 2 seconds and then start the animation
+setTimeout(() => {
+    toggleLoader(false);
+    galaxy();
+    setUniverseBackground();
+    animationFrameId = requestAnimationFrame(tick); // Start galaxy animation
+}, 1000);
+
+
+/* -------------- create palanetarium --------------------- */
+
+
 let divElmPlanet = [];
 let divElmPath = [];
 let ellipses = [];
@@ -20,44 +288,29 @@ let cursorY;
 
 let isCursorOnPlanet = false;
 
+let cometDivElm;
+
 
 /* ------------------------ loader and fetch planet data ------------------- */
 
-// Loader visibility
-function toggleLoader(show) {
-    document.getElementById('loader').style.display = show ? 'block' : 'none';
-}
-
 // Fetch planetary data
 async function fetchPlanetData() {
-    toggleLoader(true);
+
     const url = `https://api.le-systeme-solaire.net/rest/bodies/`;
 
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        // Delay for 2 seconds after success before calling the functions
-        setTimeout(() => {
-            toggleLoader(false);
-            setBackground();
-            initializeSystem(data);
-        }, 3000); // 3s 
+
+        initializeSystem(data);
+        setTimeout(moveComets, 3000); // Start the comet movement with an initial delay of 3 seconds
+
     } catch (error) {
         console.error('Fetch operation error:', error);
-        toggleLoader(false);
     }
 }
 
-// Set background image to the body
-function setBackground() {
-    // Run the applyStars function when the page loads
-applyStars();
-    // document.body.style.backgroundImage = "url('./images/background.jpg')";
-    // document.body.style.backgroundSize = "cover";
-    // document.body.style.backgroundRepeat = "no-repeat";
-    // document.body.style.backgroundPosition = "center";
-}
 
 // Initialize planet animations after data is loaded
 function initializeSystem(data) {
@@ -66,7 +319,7 @@ function initializeSystem(data) {
     displayPlanetData(data.bodies);
 
     // Orbit animation loop
-    const animationInterval = setInterval(() => {
+    setInterval(() => {
         if (rotationActive) {
             for (let i = 0; i < 8; i++) {
                 angles[i] = move(ellipses[i].rx, ellipses[i].ry, angles[i], revolutionSpeeds[i], ellipses[i].element);
@@ -79,7 +332,6 @@ function initializeSystem(data) {
 
     // Handle resizing
     onResize();
-    // window.addEventListener("resize", onResize);
 
     // Cursor tracking and tooltip
     setupCursorTracking(document.getElementById("follower"));
@@ -109,6 +361,13 @@ function createObjects() {
             divElmPath.push(pathElm);
         }
     });
+
+    // Create a single comet element
+    cometDivElm = document.createElement('div');
+    cometDivElm.classList.add('comets');
+    cometDivElm.style.visibility = 'hidden'; // Start with comet hidden
+    universe.append(cometDivElm);
+
 
     ellipses = createEllipses();
     createTooltip();
@@ -333,7 +592,7 @@ function onResize() {
     window.addEventListener("resize", () => {
         h = window.innerWidth / 2;
         k = window.innerHeight / 2;
-    
+
         // Update radii for each ellipse path
         ellipses.forEach((ellipse, index) => {
             ellipse.rx = window.innerWidth * [0.135, 0.18, 0.235, 0.285, 0.335, 0.385, 0.435, 0.48][index];
@@ -341,8 +600,9 @@ function onResize() {
             // Reposition each planet immediately after resizing
             angles[index] = move(ellipse.rx, ellipse.ry, angles[index], 0, ellipse.element);
         });
+        setUniverseBackground();
     });
-    
+
 }
 
 
@@ -411,6 +671,7 @@ let isErasing = false;
 const h2 = document.getElementById("typing-text");
 
 function type() {
+    document.querySelector("h2").style.visibility = "visible";
     if (!isErasing) {
         // Typing effect
         h2.textContent = text.slice(0, index + 1);
@@ -434,47 +695,7 @@ function type() {
     }
 }
 
-/* ------------------- universe background -----------------------*/
-const universe = document.getElementById('universe');
-const numStars = 3000;
-const starFieldWidth = window.innerWidth;
-const starFieldHeight = window.innerHeight;
-let cometDivElm;
-
-// Function to create stars
-function applyStars() {
-    for (let i = 0; i < numStars; i++) {
-        let starDivElm = document.createElement('div');
-
-        // Random size between 1 and 3
-        let size = Math.ceil(Math.random() * 3);
-        starDivElm.style.width = `${size}px`;
-        starDivElm.style.height = `${size}px`;
-
-        // Random position for each star
-        let x = Math.floor(Math.random() * starFieldWidth);
-        let y = Math.floor(Math.random() * starFieldHeight);
-
-        // Apply position and opacity
-        starDivElm.style.top = `${y}px`;
-        starDivElm.style.left = `${x}px`;
-        starDivElm.style.opacity = (Math.random() * 0.9 + 0.1).toFixed(1);
-
-        starDivElm.classList.add('stars');
-        universe.append(starDivElm);
-    }
-
-    // Create a single comet element
-    cometDivElm = document.createElement('div');
-    cometDivElm.classList.add('comets');
-    cometDivElm.style.visibility = 'hidden'; // Start with comet hidden
-    universe.append(cometDivElm);
-
-    // Start the comet movement with an initial delay
-    setTimeout(moveComets, 3000); // Initial delay of 3 seconds
-}
-
-// Function to move the comet in a random direction
+/* ------------------- crete motion of comets -----------------------*/
 function moveComets() {
     let x = Math.random();
     let y = Math.random();
@@ -529,14 +750,7 @@ function moveComets() {
     // Temporarily remove and reapply the animation
     cometDivElm.style.animation = 'none';
     cometDivElm.offsetHeight; // Trigger reflow to reset the animation
-    cometDivElm.style.animation = 'cometMove 10s linear'; // Animation lasts 10 seconds
-
-    // Set CSS variables for animation
-    console.log(offsetX);
-    console.log(offsetY);
-    console.log(angle);
-    console.log(endX);
-    console.log(endY);
+    cometDivElm.style.animation = 'cometMove 5s linear'; // Animation lasts 10 seconds
 
     cometDivElm.style.setProperty('--comet-start-x', `${offsetX}px`);
     cometDivElm.style.setProperty('--comet-start-y', `${offsetY}px`);
@@ -548,11 +762,11 @@ function moveComets() {
     // Hide the comet after 10s (animation duration), then delay the next movement by 5s
     setTimeout(() => {
         cometDivElm.style.visibility = 'hidden';
-        setTimeout(moveComets, 5000); // 5s delay before the next movement
-    }, 10000); // 10s animation duration
+        setTimeout(moveComets, 10000); // 10s delay before the next movement
+    }, 5000); // 5s animation duration
 }
 
 
 
-/* -------------------- Start the application ---------------------*/
-fetchPlanetData();
+
+
