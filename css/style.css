@@ -28,8 +28,7 @@ canvas {
 }
 
 #canvas.fade-out {
-    opacity: 0;
-    /* Fade to transparent */
+    opacity: 0;  /* Fade to transparent */
 }
 
 #sun {
@@ -125,6 +124,12 @@ canvas {
     transform: translate(-50%, -50%);
 }
 
+.planet, .path, h2{
+    opacity: 0; 
+    transition: opacity 2s ease-in-out; /* Smooth fade-in */
+}
+
+
 /* Adjust path sizes to match ellipse radii used in JavaScript */
 #path1 {
     width: calc(2 * 13.5vw);
@@ -198,8 +203,7 @@ canvas {
     background-color: red;
     border-radius: 50%;
     pointer-events: none;
-    transition: left 0.1s ease-out, top 0.1s ease-out;
-    /* Smooth following transition */
+    transition: left 0.1s ease-out, top 0.1s ease-out; /* Smooth following transition */
     z-index: 98;
     opacity: 0;
 }
@@ -279,7 +283,6 @@ h2 {
 
 /*------- css loader --------*/
 .lds-ring {
-    /* change color here */
     color: #2c3ee6
 }
 
@@ -291,7 +294,6 @@ h2 {
 .lds-ring {
     display: inline-block;
     position: fixed;
-    /* Make it overlay the screen */
     width: 80px;
     height: 80px;
     top: 50%;

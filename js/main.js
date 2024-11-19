@@ -134,8 +134,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 /* ------------ Animation of the galaxy ------------ */
 
 const clock = new THREE.Clock();
-let gatherSpeed = 0.01;
-let opacityDecreaseSpeed = 0.003;
+let gatherSpeed = 0.005;
+let opacityDecreaseSpeed = 0.001;
 
 let animationFrameId;
 
@@ -254,13 +254,13 @@ function toggleLoader(show) {
 toggleLoader(true); // Show the loader initially
 
 
-// Wait for 2 seconds and then start the animation
+// Wait for 1 second and then start the animation
 setTimeout(() => {
     toggleLoader(false);
     galaxy();
     setUniverseBackground();
     animationFrameId = requestAnimationFrame(tick); // Start galaxy animation
-}, 1000);
+}, 500);
 
 
 /* -------------- create palanetarium --------------------- */
@@ -318,6 +318,13 @@ function initializeSystem(data) {
 
     displayPlanetData(data.bodies);
 
+    // Smoothly fade in the planets and orbits
+    setTimeout(() => {
+        document.querySelectorAll('.planet, .path, h2').forEach((element) => {
+            element.style.opacity = 1; // Gradually fade in
+        });
+    }, 100); // Small delay to ensure elements are in the DOM before applying styles
+
     // Orbit animation loop
     setInterval(() => {
         if (rotationActive) {
@@ -339,6 +346,7 @@ function initializeSystem(data) {
     // Start the typing effect of the title
     type();
 }
+
 
 
 /* ----------------------------- create elements -------------------------- */
