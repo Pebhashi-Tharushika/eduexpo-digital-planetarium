@@ -124,12 +124,6 @@ canvas {
     transform: translate(-50%, -50%);
 }
 
-.planet, .path, h2{
-    opacity: 0; 
-    transition: opacity 2s ease-in-out; /* Smooth fade-in */
-}
-
-
 /* Adjust path sizes to match ellipse radii used in JavaScript */
 #path1 {
     width: calc(2 * 13.5vw);
@@ -195,6 +189,8 @@ canvas {
 }
 
 
+
+
 /* for the cursor follower */
 #follower {
     position: absolute;
@@ -210,7 +206,7 @@ canvas {
 
 
 /* for the title */
-h2 {
+#typing-text {
     position: absolute;
     top: 2vh;
     left: 50%;
@@ -227,6 +223,11 @@ h2 {
     /* Standard property */
     -webkit-text-fill-color: transparent;
     /* Required for WebKit-based browsers to make the text color transparent */
+}
+
+.planet, .path, #typing-text{
+    opacity: 0; 
+    transition: opacity 2s ease-in-out; /* Smooth fade-in */
 }
 
 
@@ -283,7 +284,7 @@ h2 {
 
 /*------- css loader --------*/
 .lds-ring {
-    color: #2c3ee6
+    color: white
 }
 
 .lds-ring,
