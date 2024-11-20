@@ -41,6 +41,7 @@ canvas {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    cursor: pointer; 
     border-radius: 50%;
     box-shadow: 0 0 1.8vw 0.9vw rgba(255, 165, 0, 0.8),
         0 0 3.6vw 1.8vw rgba(255, 140, 0, 0.5),
@@ -53,6 +54,7 @@ canvas {
 .planet {
     z-index: 99;
     position: absolute;
+    cursor: pointer; 
 }
 
 #mercury {
@@ -208,10 +210,12 @@ canvas {
 /* for the title */
 #typing-text {
     position: absolute;
-    top: 2vh;
+    top: 4vh;
     left: 50%;
     transform: translateX(-50%);
     font-size: 2em;
+    font-weight: bold;
+    line-height: 1.2em;
     text-align: center;
     display: inline-block;
     overflow: hidden;
@@ -267,6 +271,8 @@ canvas {
     position: absolute;
     background: linear-gradient(to top, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
     animation: cometMove 5s linear infinite;
+    cursor: pointer; 
+    animation-play-state: running; 
 }
 
 @keyframes cometMove {
@@ -337,3 +343,29 @@ canvas {
         transform: rotate(360deg);
     }
 }
+
+
+/* --------------- galaxy title --------------- */
+
+#galaxy-title {
+    position : absolute;
+    top : 6vh;
+    left : 50%;
+    transform : translateX(-50%);
+    text-align : center;
+    line-height: 1.2em;
+    font-size : 2em;
+    font-weight : bold;
+    background : linear-gradient(90deg, #f8980f, #db6fc6, #244fbb);
+    background-clip : text;
+    -webkit-text-fill-color : transparent; /* Use standard property */
+    color : transparent; /* Fallback */
+    opacity : 0; /* Start hidden */
+    animation: blink 6s infinite; /* animation for blinking */
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 0; font-size: 2em;}
+    50% { opacity: 1; font-size: 3em;}
+}
+

@@ -22,6 +22,17 @@ let particleGeometry = null;
 let particleMaterial = null;
 let particle = null;
 
+
+// Add title text to the canvas
+function addTitleToGalaxy() {
+    const textDiv = document.createElement('div');
+    textDiv.id = 'galaxy-title';
+    textDiv.textContent = 'Milky Way Galaxy';
+
+    document.body.appendChild(textDiv);
+}
+
+
 /* ------------------ for testing - test cube --------------- */
 
 // const cube = new THREE.Mesh(
@@ -179,6 +190,7 @@ const tick = () => {
         if (particleMaterial.opacity <= 0) {
             universeDiv.removeChild(canvas);
             cancelAnimationFrame(animationFrameId);  // Stop the animation loop
+            document.body.removeChild(document.getElementById('galaxy-title'));
             fetchPlanetData(); // Start the planet motion 
             return;  // Stop executing further frames
         }
@@ -258,6 +270,7 @@ toggleLoader(true); // Show the loader initially
 setTimeout(() => {
     toggleLoader(false);
     galaxy();
+    addTitleToGalaxy();
     setUniverseBackground();
     animationFrameId = requestAnimationFrame(tick); // Start galaxy animation
 }, 500);
@@ -361,6 +374,9 @@ function createObjects() {
         document.body.append(divElm);
         divElmPlanet.push(divElm);
 
+        if (index == 0) {
+            divElm.setAttribute('title', 'Sun'); // Set the title attribute for the tooltip
+        }
         if (index > 0) { // Exclude the Sun
             const pathElm = document.createElement('div');
             pathElm.classList.add('path');
@@ -370,14 +386,8 @@ function createObjects() {
         }
     });
 
-    // Create a single comet element
-    cometDivElm = document.createElement('div');
-    cometDivElm.classList.add('comets');
-    cometDivElm.style.visibility = 'hidden'; // Start with comet hidden
-    universe.append(cometDivElm);
-
-
     ellipses = createEllipses();
+    createComet();
     createTooltip();
     createCursorFollower();
 }
@@ -393,6 +403,15 @@ function createEllipses() {
         { rx: window.innerWidth * 0.435, ry: window.innerHeight * 0.22375, element: divElmPlanet[7] },
         { rx: window.innerWidth * 0.48, ry: window.innerHeight * 0.25, element: divElmPlanet[8] },
     ];
+}
+
+// Create a single comet element
+function createComet() {
+    cometDivElm = document.createElement('div');
+    cometDivElm.classList.add('comets');
+    cometDivElm.style.visibility = 'hidden'; // Start with comet hidden
+    universe.append(cometDivElm);
+    cometDivElm.setAttribute('title', 'Comet'); // Set the title attribute for the tooltip
 }
 
 function createTooltip() {
@@ -421,6 +440,8 @@ function move(rx, ry, angle, speed, element) {
 
     return angle + speed;
 }
+
+
 
 // Apply self-rotation speeds
 function applyRotationSpeeds() {
@@ -778,6 +799,16 @@ function moveComets() {
         cometDivElm.style.visibility = 'hidden';
         setTimeout(moveComets, 10000); // 10s delay before the next movement
     }, 5000); // 5s animation duration
+
+
+    // Pause and resume on hover
+    cometDivElm.addEventListener('mouseover', () => {
+        cometDivElm.style.animationPlayState = 'paused';
+    });
+
+    cometDivElm.addEventListener('mouseout', () => {
+        cometDivElm.style.animationPlayState = 'running';
+    });
 }
 
 
