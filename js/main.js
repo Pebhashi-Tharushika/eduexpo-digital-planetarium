@@ -304,7 +304,7 @@ let isCursorOnPlanet = false;
 let cometDivElm;
 
 
-/* ------------------------ loader and fetch planet data ------------------- */
+/* ------------------------ fetch planet data ------------------- */
 
 // Fetch planetary data
 async function fetchPlanetData() {

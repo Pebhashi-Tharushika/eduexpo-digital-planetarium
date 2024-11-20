@@ -4,7 +4,7 @@ EduExpo Digital Planetarium is an educational application designed to learn stud
 
 ### Features
 
-- **Interactive Planetary Models**: Visualize planets in an interactive way to enhance learning.
+- **Interactive Planetary Models**: Visualize universe, galaxy and planets in an interactive way to enhance learning.
 - **Real-Time Data**: Access accurate and up-to-date planetary information via NASA's API.
 - **Educational Focus**: Aimed at students to provide a foundational understanding of our solar system.
 

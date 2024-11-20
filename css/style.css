@@ -28,7 +28,8 @@ canvas {
 }
 
 #canvas.fade-out {
-    opacity: 0;  /* Fade to transparent */
+    opacity: 0;
+    /* Fade to transparent */
 }
 
 #sun {
@@ -41,7 +42,7 @@ canvas {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    cursor: pointer; 
+    cursor: pointer;
     border-radius: 50%;
     box-shadow: 0 0 1.8vw 0.9vw rgba(255, 165, 0, 0.8),
         0 0 3.6vw 1.8vw rgba(255, 140, 0, 0.5),
@@ -54,7 +55,7 @@ canvas {
 .planet {
     z-index: 99;
     position: absolute;
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 #mercury {
@@ -201,7 +202,8 @@ canvas {
     background-color: red;
     border-radius: 50%;
     pointer-events: none;
-    transition: left 0.1s ease-out, top 0.1s ease-out; /* Smooth following transition */
+    transition: left 0.1s ease-out, top 0.1s ease-out;
+    /* Smooth following transition */
     z-index: 98;
     opacity: 0;
 }
@@ -229,9 +231,12 @@ canvas {
     /* Required for WebKit-based browsers to make the text color transparent */
 }
 
-.planet, .path, #typing-text{
-    opacity: 0; 
-    transition: opacity 2s ease-in-out; /* Smooth fade-in */
+.planet,
+.path,
+#typing-text {
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+    /* Smooth fade-in */
 }
 
 
@@ -271,8 +276,8 @@ canvas {
     position: absolute;
     background: linear-gradient(to top, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
     animation: cometMove 5s linear infinite;
-    cursor: pointer; 
-    animation-play-state: running; 
+    cursor: pointer;
+    animation-play-state: running;
 }
 
 @keyframes cometMove {
@@ -289,58 +294,118 @@ canvas {
 
 
 /*------- css loader --------*/
-.lds-ring {
-    color: white
-}
-
-.lds-ring,
-.lds-ring div {
-    box-sizing: border-box;
-}
-
-.lds-ring {
-    display: inline-block;
-    position: fixed;
-    width: 80px;
-    height: 80px;
+.lds-default {
+    color: #ffffff;
+    z-index:9999;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
+    transform: translate(-50%,-50%);
 }
 
-.lds-ring div {
+.lds-default,
+.lds-default div {
     box-sizing: border-box;
-    display: block;
+}
+
+.lds-default {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-default div {
     position: absolute;
-    width: 64px;
-    height: 64px;
-    margin: 8px;
-    border: 8px solid currentColor;
+    width: 6.4px;
+    height: 6.4px;
+    background: currentColor;
     border-radius: 50%;
-    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    border-color: currentColor transparent transparent transparent;
+    animation: lds-default 1.2s linear infinite;
 }
 
-.lds-ring div:nth-child(1) {
-    animation-delay: -0.45s;
+.lds-default div:nth-child(1) {
+    animation-delay: 0s;
+    top: 36.8px;
+    left: 66.24px;
 }
 
-.lds-ring div:nth-child(2) {
+.lds-default div:nth-child(2) {
+    animation-delay: -0.1s;
+    top: 22.08px;
+    left: 62.29579px;
+}
+
+.lds-default div:nth-child(3) {
+    animation-delay: -0.2s;
+    top: 11.30421px;
+    left: 51.52px;
+}
+
+.lds-default div:nth-child(4) {
     animation-delay: -0.3s;
+    top: 7.36px;
+    left: 36.8px;
 }
 
-.lds-ring div:nth-child(3) {
-    animation-delay: -0.15s;
+.lds-default div:nth-child(5) {
+    animation-delay: -0.4s;
+    top: 11.30421px;
+    left: 22.08px;
 }
 
-@keyframes lds-ring {
-    0% {
-        transform: rotate(0deg);
+.lds-default div:nth-child(6) {
+    animation-delay: -0.5s;
+    top: 22.08px;
+    left: 11.30421px;
+}
+
+.lds-default div:nth-child(7) {
+    animation-delay: -0.6s;
+    top: 36.8px;
+    left: 7.36px;
+}
+
+.lds-default div:nth-child(8) {
+    animation-delay: -0.7s;
+    top: 51.52px;
+    left: 11.30421px;
+}
+
+.lds-default div:nth-child(9) {
+    animation-delay: -0.8s;
+    top: 62.29579px;
+    left: 22.08px;
+}
+
+.lds-default div:nth-child(10) {
+    animation-delay: -0.9s;
+    top: 66.24px;
+    left: 36.8px;
+}
+
+.lds-default div:nth-child(11) {
+    animation-delay: -1s;
+    top: 62.29579px;
+    left: 51.52px;
+}
+
+.lds-default div:nth-child(12) {
+    animation-delay: -1.1s;
+    top: 51.52px;
+    left: 62.29579px;
+}
+
+@keyframes lds-default {
+
+    0%,
+    20%,
+    80%,
+    100% {
+        transform: scale(1);
     }
 
-    100% {
-        transform: rotate(360deg);
+    50% {
+        transform: scale(1.5);
     }
 }
 
@@ -348,24 +413,36 @@ canvas {
 /* --------------- galaxy title --------------- */
 
 #galaxy-title {
-    position : absolute;
-    top : 6vh;
-    left : 50%;
-    transform : translateX(-50%);
-    text-align : center;
+    position: absolute;
+    top: 6vh;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
     line-height: 1.2em;
-    font-size : 2em;
-    font-weight : bold;
-    background : linear-gradient(90deg, #f8980f, #db6fc6, #244fbb);
-    background-clip : text;
-    -webkit-text-fill-color : transparent; /* Use standard property */
-    color : transparent; /* Fallback */
-    opacity : 0; /* Start hidden */
-    animation: blink 6s infinite; /* animation for blinking */
+    font-size: 2em;
+    font-weight: bold;
+    background: linear-gradient(90deg, #f8980f, #db6fc6, #244fbb);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Use standard property */
+    color: transparent;
+    /* Fallback */
+    opacity: 0;
+    /* Start hidden */
+    animation: blink 6s infinite;
+    /* animation for blinking */
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 0; font-size: 2em;}
-    50% { opacity: 1; font-size: 3em;}
-}
 
+    0%,
+    100% {
+        opacity: 0;
+        font-size: 2em;
+    }
+
+    50% {
+        opacity: 1;
+        font-size: 3em;
+    }
+}
